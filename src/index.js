@@ -12,6 +12,10 @@ const requestLogger = require('./middleware/requestLogger');
 const rateLimiter = require('./middleware/rateLimiter');
 const googleAuthService = require('./services/googleAuthService');
 
+// Initialisation des services
+const sseService = require('./services/sseService');
+const analyticsService = require('./services/analyticsService');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -28,7 +32,7 @@ app.use(cors({
 // Parsing du corps des requêtes
 app.use(express.json());
 
-// Logging des requêtes
+// Journalisation des requêtes
 app.use(requestLogger);
 
 // Limitation de taux global
@@ -48,28 +52,41 @@ app.get('/health', (req, res) => {
 // Gestion des erreurs
 app.use(errorHandler);
 
-// Initialisation du service d'authentification Google
-async function initializeApp() {
+// Initialisation des services
+async function initializeServices() {
   try {
-    await googleAuthService.initialize();
+    // Ajouter cette condition pour permettre de démarrer même sans fichier de configuration
+    if (process.env.NODE_ENV !== 'test') {
+      await googleAuthService.initialize();
+    }
     
     // Démarrage du serveur
     app.listen(PORT, () => {
       logger.info(`Serveur MCP SSE démarré sur le port ${PORT}`);
     });
   } catch (error) {
-    logger.error('Erreur lors de l\'initialisation de l\'application:', error);
-    process.exit(1);
+    logger.error('Erreur lors de l\'initialisation des services:', error);
+    // En développement, ne pas quitter pour permettre de résoudre les problèmes
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
   }
 }
 
-// Lancement de l'application
-initializeApp();
+// Démarrage de l'application
+initializeServices();
 
 // Gestion de l'arrêt propre
-process.on('SIGINT', () => {
-  logger.info('Arrêt du serveur...');
+process.on('SIGTERM', () => {
+  logger.info('Signal SIGTERM reçu, arrêt du serveur...');
+  // Nettoyage des ressources
   process.exit(0);
 });
 
-module.exports = app;
+process.on('SIGINT', () => {
+  logger.info('Signal SIGINT reçu, arrêt du serveur...');
+  // Nettoyage des ressources
+  process.exit(0);
+});
+
+module.exports = app; // Export pour les tests
