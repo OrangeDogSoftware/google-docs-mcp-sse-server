@@ -1,0 +1,37 @@
+{
+  "name": "google-docs-mcp-sse-server",
+  "version": "1.0.0",
+  "description": "Serveur MCP SSE spécialisé dans la gestion des documents Google Docs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OrangeDogSoftware/google-docs-mcp-sse-server.git"
+  },
+  "keywords": [
+    "MCP",
+    "SSE",
+    "Google",
+    "Docs",
+    "Server"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "googleapis": "^133.0.0",
+    "helmet": "^7.1.0",
+    "uuid": "^9.0.1",
+    "winston": "^3.12.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0"
+  }
+}
