@@ -1,6 +1,5 @@
 const { google } = require('googleapis');
 const logger = require('../utils/logger');
-const ApiError = require('../utils/ApiError');
 
 /**
  * Middleware d'authentification Google OAuth2
@@ -10,9 +9,12 @@ async function authenticate(req, res, next) {
     // Récupération du token d'accès depuis l'en-tête Authorization
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next(
-        new ApiError(401, 'Authentification requise', 'UNAUTHORIZED')
-      );
+      return res.status(401).json({ 
+        error: { 
+          message: 'Authentification requise',
+          code: 'UNAUTHORIZED'
+        } 
+      });
     }
     
     const token = authHeader.split(' ')[1];
@@ -36,20 +38,25 @@ async function authenticate(req, res, next) {
       );
       
       if (!hasRequiredScopes) {
-        return next(
-          new ApiError(403, 'Autorisations insuffisantes', 'INSUFFICIENT_PERMISSIONS')
-        );
+        return res.status(403).json({ 
+          error: { 
+            message: 'Autorisations insuffisantes',
+            code: 'INSUFFICIENT_PERMISSIONS'
+          } 
+        });
       }
       
       // Ajouter le client authentifié à l'objet de requête
       req.auth = auth;
-      req.auth.credentials = tokenInfo;
       next();
     } catch (error) {
       logger.error('Erreur lors de la vérification du token:', error);
-      return next(
-        new ApiError(401, 'Token invalide ou expiré', 'INVALID_TOKEN', error)
-      );
+      return res.status(401).json({ 
+        error: { 
+          message: 'Token invalide ou expiré',
+          code: 'INVALID_TOKEN'
+        } 
+      });
     }
   } catch (error) {
     next(error);
