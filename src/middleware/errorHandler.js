@@ -30,9 +30,6 @@ function errorHandler(err, req, res, next) {
     errorResponse.error.stack = err.stack;
   }
 
-  // Stockage du code d'erreur pour les statistiques
-  res.locals.errorCode = err.code || 'INTERNAL_SERVER_ERROR';
-
   res.status(statusCode).json(errorResponse);
 }
 
